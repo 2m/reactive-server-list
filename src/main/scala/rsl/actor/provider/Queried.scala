@@ -1,11 +1,12 @@
 package rsl
 package actor
+package provider
 
 import akka.actor.Actor
-import rsl.actor.Queried.Message.{ServerInfoRequest, ServerInfoResponse}
 import scala.concurrent.Future
 import net.sourceforge.queried.QueriEd
 import scala.concurrent.ExecutionContext.Implicits.global
+import rsl.actor.provider.Message.{ServerInfoRequest, ServerInfoResponse}
 
 class Queried extends Actor {
   override def receive = {
@@ -18,12 +19,5 @@ class Queried extends Actor {
           info.getPlayerCount
         )
       }
-  }
-}
-
-object Queried {
-  object Message {
-    case class ServerInfoRequest(game: String, ip: String, port: String)
-    case class ServerInfoResponse(game: String, name: String, map: String, playerCount: String)
   }
 }
