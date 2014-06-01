@@ -3,7 +3,7 @@ package actor
 
 import rsl.util.RslClusterSpec
 import akka.actor.Props
-import rsl.actor.Server.Message.InfoResponse
+import rsl.model.ServerInfo
 
 class StreamerSpec extends RslClusterSpec("StreamerSpec") {
 
@@ -12,12 +12,12 @@ class StreamerSpec extends RslClusterSpec("StreamerSpec") {
   "Streamer" must {
     "publish to receivers" in {
       streamer ! Streamer.Message.RegisterForAnyServer(testActor)
-      streamer ! InfoResponse.empty
-      expectMsg(InfoResponse.empty)
+      streamer ! ServerInfo.empty
+      expectMsg(ServerInfo.empty)
 
       streamer ! Streamer.Message.RegisterForAnyServer(testActor)
-      streamer ! InfoResponse.empty
-      expectMsg(InfoResponse.empty)
+      streamer ! ServerInfo.empty
+      expectMsg(ServerInfo.empty)
 
       expectNoMsg()
     }

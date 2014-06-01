@@ -2,9 +2,8 @@ package rsl.actor
 
 import akka.testkit.TestProbe
 import akka.actor._
-import rsl.model.{HalfLife, ServerTopic, GameServer}
+import rsl.model.{ServerInfo, HalfLife, ServerTopic, GameServer}
 import rsl.util.TestUtil.Implicits._
-import rsl.actor.Server.Message.InfoResponse
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{SubscribeAck, Subscribe}
 import rsl.util.RslClusterSpec
@@ -20,7 +19,7 @@ class ClusterServerSpec extends RslClusterSpec("ClusterServerSpec") {
 
   "ClusterServer" must {
     "forward received message from server to topic" in {
-      val msg = InfoResponse.empty
+      val msg = ServerInfo.empty
       val mediator = DistributedPubSubExtension(system).mediator
 
       mediator ! Subscribe(ServerTopic.id, testActor)

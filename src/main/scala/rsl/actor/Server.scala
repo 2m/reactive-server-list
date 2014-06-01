@@ -3,7 +3,7 @@ package rsl.actor
 import akka.actor.{Cancellable, Props, ActorRef, Actor}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import rsl.model.{Game, GameServer}
+import rsl.model.{ServerInfo, Game, GameServer}
 import java.util.concurrent.TimeUnit
 
 class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends Actor {
@@ -18,7 +18,7 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
   })
   val ActorName(game, ip, port) = self.path.name
 
-  var latestInfo = Message.InfoResponse.empty
+  var latestInfo = ServerInfo.empty
   var updateTicker: Option[Cancellable] = None
 
   val requestPeriod = context.system.settings.config.getDuration("rsl.request-period", TimeUnit.SECONDS).seconds
@@ -33,8 +33,8 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
     }
     case Message.Update =>
       infoProvider ! provider.Message.ServerInfoRequest(game, ip, port)
-    case provider.Message.ServerInfoResponse(game, name, map, playerCount) =>
-      latestInfo = Message.InfoResponse(game, name, map, playerCount)
+    case provider.Message.ServerInfoResponse(game, address, port, name, map, nextMap, timeLeft, playerCount, playerMax) =>
+      latestInfo = ServerInfo(game, address, port, name, map, nextMap, timeLeft, playerCount, playerMax)
       infoSink ! latestInfo
   }
 
@@ -47,10 +47,6 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
 object Server {
   object Message {
     case object InfoRequest
-    case class InfoResponse(game: String, name: String, map: String, playerCount: String)
-    object InfoResponse {
-      val empty = InfoResponse("N/A", "N/A", "N/A", "N/A")
-    }
 
     private[Server] val Update = "update"
   }

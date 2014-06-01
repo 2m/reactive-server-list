@@ -5,7 +5,7 @@ import akka.actor.Props
 import scala.concurrent.duration._
 import rsl.util.RslSpec
 import rsl.util.TestUtil.Implicits._
-import rsl.model.HalfLife
+import rsl.model.{ServerInfo, HalfLife}
 
 class ServerSpec extends RslSpec("ServerSpec") {
 
@@ -27,7 +27,7 @@ class ServerSpec extends RslSpec("ServerSpec") {
     "answer with server info" in {
       within(1.second) {
         server ! (deadSender, Server.Message.InfoRequest)
-        expectMsg((deadSender, Server.Message.InfoResponse.empty))
+        expectMsg((deadSender, ServerInfo.empty))
       }
     }
 
@@ -38,8 +38,8 @@ class ServerSpec extends RslSpec("ServerSpec") {
     }
 
     "should send info to sink when received from provider" in {
-      server ! provider.Message.ServerInfoResponse("game", "name", "map", "playerCount")
-      infoSink.expectMsg(Server.Message.InfoResponse("game", "name", "map", "playerCount"))
+      server ! provider.Message.ServerInfoResponse("game", "address", "ip", "name", "map", "nextMap", "timeLeft", "playerCount", "playerMax")
+      infoSink.expectMsg(ServerInfo("game", "address", "ip", "name", "map", "nextMap", "timeLeft", "playerCount", "playerMax"))
     }
   }
 

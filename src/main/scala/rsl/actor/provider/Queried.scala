@@ -14,9 +14,14 @@ class Queried extends Actor {
       Future(QueriEd.serverQuery(game.toUpperCase, ip, port.toInt)).onSuccess { case info =>
         sender ! ServerInfoResponse(
           info.getGame,
+          ip,
+          port,
           info.getName,
           info.getMap,
-          info.getPlayerCount
+          "N/A",
+          info.getTimeLimit,
+          info.getPlayerCount,
+          info.getMaxPlayers
         )
       }
   }

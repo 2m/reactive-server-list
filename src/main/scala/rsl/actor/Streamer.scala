@@ -4,8 +4,7 @@ package actor
 import akka.actor.{Terminated, ActorRef, Actor}
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.Subscribe
-import rsl.model.ServerTopic
-import rsl.actor.Server.Message.InfoResponse
+import rsl.model.{ServerInfo, ServerTopic}
 
 class Streamer extends Actor {
   import Streamer.Message._
@@ -25,7 +24,7 @@ class Streamer extends Actor {
     case Terminated(ref) =>
       context.unwatch(ref)
       serverReceivers -= ref
-    case m: InfoResponse =>
+    case m: ServerInfo =>
       serverReceivers.foreach(_ ! m)
   }
 }

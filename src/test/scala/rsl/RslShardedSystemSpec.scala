@@ -1,11 +1,10 @@
 package rsl
 
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import rsl.model.{HalfLife, GameServer}
+import rsl.model.{ServerInfo, HalfLife, GameServer}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import rsl.util.RslSpec
-import rsl.actor.Server.Message.InfoResponse
 import com.typesafe.config.ConfigFactory
 import scala.util.Random
 
@@ -39,7 +38,7 @@ class RslShardedSystemSpec extends RslSpec("RslShardedSystemSpec")
 
       rsl.addListener(testActor)
       receiveWhile() {
-        case m: InfoResponse => println(m)
+        case m: ServerInfo => println(m)
       }
     }
   }
