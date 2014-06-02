@@ -17,6 +17,7 @@ class RslSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
       """
         |akka.remote.netty.tcp.port = 0
       """.stripMargin)
+      .withFallback(ConfigFactory.parseResources("reactive-server-list.conf"))
       .withFallback(ConfigFactory.load())
   ))
 

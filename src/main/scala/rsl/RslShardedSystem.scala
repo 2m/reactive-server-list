@@ -13,7 +13,9 @@ import scala.concurrent.Promise
 import com.typesafe.config.{ConfigFactory, Config}
 
 class RslShardedSystem(config: Config) {
-  val system = ActorSystem("rsl", config.withFallback(ConfigFactory.load()))
+  val system = ActorSystem("rsl", config
+    .withFallback(ConfigFactory.parseResources("reactive-server-list.conf"))
+    .withFallback(ConfigFactory.load()))
   val shardCount = 10
   implicit val timeout = Timeout(2.seconds)
 
