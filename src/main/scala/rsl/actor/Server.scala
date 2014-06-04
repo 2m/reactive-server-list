@@ -2,7 +2,6 @@ package rsl.actor
 
 import akka.actor.{Cancellable, Props, ActorRef, Actor}
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import rsl.model.{ServerInfo, Game, GameServer}
 import java.util.concurrent.TimeUnit
 
@@ -24,7 +23,10 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
   val requestPeriod = context.system.settings.config.getDuration("rsl.request-period", TimeUnit.SECONDS).seconds
 
   override def preStart = {
-    updateTicker = Some(context.system.scheduler.schedule(0.seconds, requestPeriod, self, Message.Update))
+    updateTicker = {
+      import context.dispatcher
+      Some(context.system.scheduler.schedule(0.seconds, requestPeriod, self, Message.Update))
+    }
   }
 
   override def receive = {
