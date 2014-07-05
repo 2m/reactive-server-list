@@ -1,11 +1,12 @@
 package rsl.actor
 
-import akka.actor.{Cancellable, Props, ActorRef, Actor}
+import akka.actor.{Props, ActorRef, Actor}
 import scala.concurrent.duration._
 import rsl.model.{ServerInfo, Game, GameServer}
 import java.util.concurrent.TimeUnit
+import rsl.actor.Scheduler.{ReSchedule, Job}
 
-class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends Actor {
+class Server(val infoSink: ActorRef, infoProviderProps: Option[Props], schedulerProps: Option[Props]) extends Actor {
 
   import Server._
 
@@ -15,19 +16,18 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
       case "deterministic" | _ => Props(classOf[provider.Deterministic])
     }
   })
+
+  val requestPeriod = context.system.settings.config.getDuration("rsl.request-period", TimeUnit.SECONDS).seconds
+  val stopPeriod = context.system.settings.config.getDuration("rsl.shutdown-period", TimeUnit.SECONDS).seconds
+
+  val updateJob = Job(self, Message.Update, requestPeriod, once = false)
+  val stopJob = Job(self, Message.Stop, stopPeriod, once = true)
+
+  val scheduler = context.actorOf(schedulerProps.getOrElse(Scheduler.props(Seq(updateJob, stopJob))))
+
   val ActorName(game, ip, port) = self.path.name
 
   var latestInfo = ServerInfo.empty
-  var updateTicker: Option[Cancellable] = None
-
-  val requestPeriod = context.system.settings.config.getDuration("rsl.request-period", TimeUnit.SECONDS).seconds
-
-  override def preStart = {
-    updateTicker = {
-      import context.dispatcher
-      Some(context.system.scheduler.schedule(0.seconds, requestPeriod, self, Message.Update))
-    }
-  }
 
   override def receive = {
     case (requester: ActorRef, Message.InfoRequest) => {
@@ -35,13 +35,13 @@ class Server(val infoSink: ActorRef, infoProviderProps: Option[Props]) extends A
     }
     case Message.Update =>
       infoProvider ! provider.Message.ServerInfoRequest(game, ip, port)
+    case Message.Stop =>
+      context.stop(self)
     case provider.Message.ServerInfoResponse(game, address, port, name, map, nextMap, timeLeft, playerCount, playerMax) =>
       latestInfo = ServerInfo(game, address, port, name, map, nextMap, timeLeft, playerCount, playerMax)
       infoSink ! latestInfo
-  }
 
-  override def postStop = {
-    updateTicker.foreach(_.cancel())
+      scheduler ! ReSchedule(stopJob)
   }
 
 }
@@ -51,6 +51,7 @@ object Server {
     case object InfoRequest
 
     private[Server] val Update = "update"
+    private[Server] val Stop = "stop"
   }
 
   object ActorName {
@@ -61,4 +62,6 @@ object Server {
       case _ => None
     }
   }
+
+  def props(infoSink: ActorRef) = Props(classOf[Server], infoSink, None, None)
 }

@@ -13,7 +13,7 @@ class ClusterServer(serverProps: Option[Props]) extends Actor {
 
   override def receive = {
     case StartDwelling(gameServer) =>
-      context.actorOf(serverProps.getOrElse(Props(classOf[Server], self, None)), Server.ActorName(gameServer))
+      context.actorOf(serverProps.getOrElse(Server.props(self)), Server.ActorName(gameServer))
       sender ! DwellingAt(Serialization.serializedActorPath(self))
     case m: ServerInfo =>
       mediator ! Publish(ServerTopic.id, m)

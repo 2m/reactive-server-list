@@ -1,11 +1,12 @@
 package rsl.actor
 
 import akka.testkit.{TestActorRef, TestProbe}
-import akka.actor.Props
+import akka.actor.{Terminated, Props}
 import scala.concurrent.duration._
 import rsl.util.RslSpec
 import rsl.util.TestUtil.Implicits._
 import rsl.model.{ServerInfo, HalfLife}
+import akka.dispatch.sysmsg.DeathWatchNotification
 
 class ServerSpec extends RslSpec("ServerSpec") {
 
@@ -13,7 +14,7 @@ class ServerSpec extends RslSpec("ServerSpec") {
 
   val infoSink = TestProbe()
   val infoProvider = TestProbe()
-  val server = TestActorRef(Props(classOf[Server], infoSink.ref, Some(infoProvider.props)), Server.ActorName(game, ip, port))
+  val server = TestActorRef(Props(classOf[Server], infoSink.ref, Some(infoProvider.props), None), Server.ActorName(game, ip, port))
 
   val deadSender = system.deadLetters
 
@@ -40,6 +41,13 @@ class ServerSpec extends RslSpec("ServerSpec") {
     "should send info to sink when received from provider" in {
       server ! provider.Message.ServerInfoResponse("game", "address", "ip", "name", "map", "nextMap", "timeLeft", "playerCount", "playerMax")
       infoSink.expectMsg(ServerInfo("game", "address", "ip", "name", "map", "nextMap", "timeLeft", "playerCount", "playerMax"))
+    }
+
+    "should stop when receiving no messages from provider" in {
+      watch(server)
+      within(server.underlyingActor.asInstanceOf[Server].stopPeriod * 2) { // some leeway
+        expectMsgClass(classOf[Terminated])
+      }
     }
   }
 
