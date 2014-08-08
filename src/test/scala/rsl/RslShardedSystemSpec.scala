@@ -22,17 +22,6 @@ class RslShardedSystemSpec extends RslSpec("RslShardedSystemSpec")
       rslOption = Some(Await.result(RslShardedSystem(rslConfig), timeout))
     }
 
-    "accept new servers" in {
-      val Some(rsl) = rslOption
-      val server1 = rsl.addServer(GameServer(HalfLife, "127.0.0.1", "27015"))
-      val server1DwellingAt = Await.result(server1, timeout)
-      println(s"Server 1 is dwelling at: $server1DwellingAt")
-
-      val server2 = rsl.addServer(GameServer(HalfLife, "127.0.0.1", "27016"))
-      val server2DwellingAt = Await.result(server2, timeout)
-      println(s"Server 2 is dwelling at: $server2DwellingAt")
-    }
-
     "receive server updates" in {
       val Some(rsl) = rslOption
 

@@ -14,7 +14,7 @@ class ClusterServer(serverProps: Option[Props]) extends Actor {
   override def receive = {
     case StartDwelling(gameServer) =>
       context.actorOf(serverProps.getOrElse(Server.props(self)), Server.ActorName(gameServer))
-      sender ! DwellingAt(Serialization.serializedActorPath(self))
+      sender ! DwellingAt(Serialization.serializedActorPath(self), gameServer)
     case m: ServerInfo =>
       mediator ! Publish(ServerTopic.id, m)
   }
@@ -23,6 +23,6 @@ class ClusterServer(serverProps: Option[Props]) extends Actor {
 object ClusterServer {
   object Message {
     case class StartDwelling(gameServer: GameServer)
-    case class DwellingAt(address: String)
+    case class DwellingAt(address: String, gameServer: GameServer)
   }
 }

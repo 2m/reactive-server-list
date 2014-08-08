@@ -4,12 +4,17 @@ name := "reactive-server-list"
 
 version := "0.0.2"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % "2.3.3",
-  "com.typesafe.akka" %% "akka-contrib" % "2.3.3",
-  "net.sourceforge.queried" % "queried" % "2.7.0",
-  "org.scalatest" % "scalatest_2.11" % "2.1.5" % "test",
-  "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
-)
+libraryDependencies ++= {
+  val akkaVersion = "2.3.4"
+  Seq(
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
+    "net.sourceforge.queried" % "queried" % "2.7.0",
+    "com.typesafe.slick" %% "slick" % "2.1.0",
+    "com.h2database" % "h2" % "1.4.179",
+    "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
+  )
+}
