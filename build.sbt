@@ -2,7 +2,7 @@ organization := "2m"
 
 name := "reactive-server-list"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 scalaVersion := "2.11.2"
 
@@ -18,3 +18,5 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
   )
 }
+
+publishTo := Some("Bintray API Realm" at "https://api.bintray.com/maven/2m/maven/reactive-server-list")
