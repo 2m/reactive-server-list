@@ -14,7 +14,7 @@ class DatabaseProviderSpec extends RslSpec("DatabaseProviderSpec") {
     "provide h2 database" in {
       val config = ConfigFactory.parseString(s"""
           provider = h2
-          url = "jdbc:h2:mem:${new Random().nextString(6)}"
+          url = "jdbc:h2:mem:"
           driver = org.h2.Driver
       """)
 

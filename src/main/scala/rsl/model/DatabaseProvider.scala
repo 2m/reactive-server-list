@@ -5,6 +5,7 @@ import com.typesafe.config.Config
 import rsl.model.DatabaseProvider.Provide
 
 import scala.concurrent.duration._
+import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.TableQuery
 
 class DatabaseProvider extends Actor {
@@ -52,12 +53,16 @@ object DatabaseProvider {
     }
 
     def createSchema(implicit session: Session) = {
-      servers.ddl.create
+      if (MTable.getTables.list.find(_.name.name.equalsIgnoreCase("servers")).isEmpty) {
+        servers.ddl.create
+      }
     }
 
-    def insertData(implicit session: Session): Int = {
-      servers += ("localhost", 27015)
-      servers += ("localhost", 27016)
+    def insertData(implicit session: Session) = {
+      if (servers.list.isEmpty) {
+        servers +=("localhost", 27015)
+        servers +=("localhost", 27016)
+      }
     }
   }
 }
