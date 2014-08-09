@@ -2,7 +2,7 @@ organization := "2m"
 
 name := "reactive-server-list"
 
-version := "0.0.3-SNAPSHOT"
+version := "0.0.3"
 
 scalaVersion := "2.11.2"
 

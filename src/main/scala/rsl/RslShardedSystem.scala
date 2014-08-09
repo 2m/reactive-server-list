@@ -13,8 +13,9 @@ import rsl.actor.{Animator, ClusterServer, Server, Streamer}
 import rsl.model.DatabaseProvider
 import rsl.model.DatabaseProvider.{Db, Provide}
 
-import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
+import scala.concurrent.duration._
 
 class RslShardedSystem(config: Config) {
   val system = ActorSystem("rsl", config
@@ -23,8 +24,8 @@ class RslShardedSystem(config: Config) {
   val shardCount = 10
   implicit val timeout = Timeout(2.seconds)
 
-  var streamer: Option[ActorRef] = None
-  var animator: Option[ActorRef] = None
+  val streamer = Promise[ActorRef]
+  val animator = Promise[ActorRef]
 
   val idExtractor: ShardRegion.IdExtractor = {
     case m @ StartDwelling(gameServer) => (Server.ActorName(gameServer), m)
@@ -45,24 +46,23 @@ class RslShardedSystem(config: Config) {
       shardResolver = shardResolver
     )
 
-    streamer = Some(system.actorOf(Props[Streamer]))
+    streamer.success(system.actorOf(Props[Streamer]))
 
-    import scala.concurrent.ExecutionContext.Implicits.global
     (system.actorOf(Props[DatabaseProvider]) ? Provide(system.settings.config.getConfig("rsl.db"))).onSuccess {
-      case Db(db) => animator = Some(system.actorOf(Props(classOf[Animator], db)))
+      case Db(db) => animator.success(system.actorOf(Props(classOf[Animator], db)))
     }
 
     val startPromise = Promise[RslShardedSystem]()
     cluster.registerOnMemberUp {
       startPromise.success(this)
 
-      animator.get ! Animate
+      animator.future.foreach(_ ! Animate)
     }
     startPromise.future
   }
 
   def addListener(listener: ActorRef) = {
-    streamer.foreach(_ ! Streamer.Message.RegisterForAnyServer(listener))
+    streamer.future.foreach(_ ! Streamer.Message.RegisterForAnyServer(listener))
   }
 
   def shutdown = {
